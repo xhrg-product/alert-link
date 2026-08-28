@@ -124,12 +124,6 @@ public class PrometheusAlertMessage {
         this.truncatedAlerts = truncatedAlerts;
     }
 
-//    private Date startsAt;
-//    private Date endsAt;
-//    private String generatorURL;
-//    private Map<String, String> annotations;
-//    private Map<String, String> labels;
-
     public static class Alert {
         private String status;
         private LinkedHashMap<String, String> labels;

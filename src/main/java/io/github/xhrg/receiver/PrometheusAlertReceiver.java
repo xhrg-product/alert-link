@@ -34,8 +34,8 @@ import io.github.xhrg.model.StatusType;
 import io.github.xhrg.pipline.AlertMsgPipline;
 import io.github.xhrg.util.AlertMsgUtils;
 import io.github.xhrg.util.JsonUtils;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 /**
  * Prometheus告警接收器 处理Prometheus Alertmanager发送的webhook告警

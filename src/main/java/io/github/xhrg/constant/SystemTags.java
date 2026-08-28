@@ -28,7 +28,7 @@ public class SystemTags {
     public static final String SKIP = "sys_skip";
 
     // 静默，单位分钟。
-    public static final String QUIET = "sys_silence";
+    public static final String SILENCE = "sys_silence";
 
     /**
      * 系统标签前缀

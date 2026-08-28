@@ -23,7 +23,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.util.Date;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -54,15 +56,15 @@ public class TemplateRendererTest {
         msg.setGroupAttrs(groupAttr);
 
         // Test rendering
-        String result = templateRenderer.render("dd-group",
-            java.util.Map.of(
-                "name", msg.getName(),
-                "status", msg.getStatus().name(),
-                "startTime", msg.getStartTime(),
-                "endTime", msg.getEndTime(),
-                "flatAttrs", msg.getFlatAttrs(),
-                "groupAttrs", msg.getGroupAttrs()
-            ));
+        Map<String, Object> variables1 = new HashMap<>();
+        variables1.put("name", msg.getName());
+        variables1.put("status", msg.getStatus().name());
+        variables1.put("startTime", msg.getStartTime());
+        variables1.put("endTime", msg.getEndTime());
+        variables1.put("flatAttrs", msg.getFlatAttrs());
+        variables1.put("groupAttrs", msg.getGroupAttrs());
+
+        String result = templateRenderer.render("dd-group", variables1);
 
         assertNotNull(result);
         assertTrue(result.contains("Test Alert"));
@@ -75,14 +77,14 @@ public class TemplateRendererTest {
 
     @Test
     public void testRenderFiringTemplate() {
-        String result = templateRenderer.render("dd-group",
-            java.util.Map.of(
-                "name", "CPU Alert",
-                "status", StatusType.FIRING.name(),
-                "startTime", new Date(),
-                "flatAttrs", new LinkedHashMap<String, String>(),
-                "groupAttrs", new LinkedHashMap<String, LinkedHashMap<String, String>>()
-            ));
+        Map<String, Object> variables2 = new HashMap<>();
+        variables2.put("name", "CPU Alert");
+        variables2.put("status", StatusType.FIRING.name());
+        variables2.put("startTime", new Date());
+        variables2.put("flatAttrs", new LinkedHashMap<String, String>());
+        variables2.put("groupAttrs", new LinkedHashMap<String, LinkedHashMap<String, String>>());
+
+        String result = templateRenderer.render("dd-group", variables2);
 
         assertNotNull(result);
         assertTrue(result.contains("🔴"));
@@ -92,15 +94,15 @@ public class TemplateRendererTest {
 
     @Test
     public void testRenderResolvedTemplate() {
-        String result = templateRenderer.render("dd-group",
-            java.util.Map.of(
-                "name", "CPU Alert",
-                "status", StatusType.RESOLVED.name(),
-                "startTime", new Date(),
-                "endTime", new Date(),
-                "flatAttrs", new LinkedHashMap<String, String>(),
-                "groupAttrs", new LinkedHashMap<String, LinkedHashMap<String, String>>()
-            ));
+        Map<String, Object> variables3 = new HashMap<>();
+        variables3.put("name", "CPU Alert");
+        variables3.put("status", StatusType.RESOLVED.name());
+        variables3.put("startTime", new Date());
+        variables3.put("endTime", new Date());
+        variables3.put("flatAttrs", new LinkedHashMap<String, String>());
+        variables3.put("groupAttrs", new LinkedHashMap<String, LinkedHashMap<String, String>>());
+
+        String result = templateRenderer.render("dd-group", variables3);
 
         assertNotNull(result);
         assertTrue(result.contains("✅"));

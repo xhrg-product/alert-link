@@ -16,6 +16,8 @@
 
 package io.github.xhrg.util;
 
+import java.util.List;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -34,12 +36,23 @@ public class JsonUtils {
     }
 
     public static <T> T fromJson(String json, Class<T> clazz) {
-        if (json == null || json.isBlank())
+        if (StrUtils.isEmpty(json))
             return null;
         try {
             return OBJECT_MAPPER.readValue(json, clazz);
         } catch (JsonProcessingException e) {
             throw new RuntimeException("JSON反序列化失败: " + clazz.getName(), e);
+        }
+    }
+
+    public static <T> List<T> fromArray(String json, Class<T> clazz) {
+        if (StrUtils.isEmpty(json))
+            return null;
+        try {
+            return OBJECT_MAPPER.readValue(json,
+                    OBJECT_MAPPER.getTypeFactory().constructCollectionType(java.util.List.class, clazz));
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("JSON数组解析失败", e);
         }
     }
 }

@@ -18,9 +18,12 @@ package io.github.xhrg.receiver;
 
 import java.util.Date;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -37,12 +40,14 @@ import io.github.xhrg.model.StatusType;
 import io.github.xhrg.pipline.AlertMsgPipline;
 import io.github.xhrg.util.AlertMsgUtils;
 import io.github.xhrg.util.JsonUtils;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
+import io.github.xhrg.util.TimeUtils;
+import javax.servlet.http.HttpServletRequest;
 
 @Component
 @RestController
 public class PrometheusReceiver {
+
+    private static Logger logger = LoggerFactory.getLogger(PrometheusReceiver.class);
 
     // 在一定周期内，恢复通知只发送一次。
     private static final int SILENT_MINUTES = 20;
@@ -56,10 +61,28 @@ public class PrometheusReceiver {
     // 该地址固定是Prometheus的配置方法
     @RequestMapping("/api/v2/alerts")
     @ResponseBody
-    public String alert(@RequestBody String body, HttpServletRequest request, HttpServletResponse response) {
+    public String alert(@RequestBody String body, HttpServletRequest request) {
 
-        PrometheusAlertMessage.Alert alertMsg = JsonUtils.fromJson(body,
-                io.github.xhrg.dto.prometheus.PrometheusAlertMessage.Alert.class);
+        List<PrometheusAlertMessage.Alert> alertMsgList = null;
+
+        try {
+            alertMsgList = JsonUtils.fromArray(body, io.github.xhrg.dto.prometheus.PrometheusAlertMessage.Alert.class);
+        } catch (Exception e) {
+            logger.error(body);
+            return "ERROR";
+        }
+
+        for (PrometheusAlertMessage.Alert a : alertMsgList) {
+            alert(a, request);
+        }
+
+        return "OK";
+    }
+
+    private String alert(PrometheusAlertMessage.Alert alertMsg, HttpServletRequest request) {
+
+        logger.info("alert, start is {}, end is {}, body is {}", TimeUtils.timeToLocal(alertMsg.getStartsAt()),
+                TimeUtils.timeToLocal(alertMsg.getEndsAt()), JsonUtils.toJson(alertMsg));
 
         AlertLinkMsg msg = new AlertLinkMsg();
         long msgCode = AlertMsgUtils.code(alertMsg);
@@ -67,7 +90,6 @@ public class PrometheusReceiver {
         Date date = alertMsg.getEndsAt();
         // 结束时间如果小于当前时间，则表示恢复消息。恢复消息20分钟内只发送一次就行。
         if (date.getTime() < System.currentTimeMillis()) {
-
             Boolean have = cache.getIfPresent(msgCode);
             if (have != null && have) {
                 return "OK";
@@ -81,6 +103,7 @@ public class PrometheusReceiver {
         msg.setCode(msgCode);
         msg.setRawData(alertMsg);
         msg.setHttpRequest(request);
+        msg.setName(alertMsg.getLabels().get("alertname"));
 
         msg.getGroupAttrs().put("annotations", alertMsg.getAnnotations());
         msg.getGroupAttrs().put("labels", alertMsg.getLabels());
