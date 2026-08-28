@@ -35,10 +35,29 @@ alert:
 
 ### 接入监控源
 
-将监控系统的 webhook 指向 Alert Link：
+Alert Link 目前支持两种告警接收方式：
 
-- Prometheus: `POST /prom-alert/abcd`
-- 其他系统: 扩展 Receiver 即可
+**1. Alertmanager Webhook**
+- 端点：`POST /for-alertmanager`
+- 说明：接收 Alertmanager 发送的 webhook 告警
+- 配置：在 Alertmanager 的 `receivers` 中配置 webhook URL
+
+**2. Prometheus 原生格式**
+- 端点：`POST /api/v2/alerts`
+- 说明：接收 Prometheus 原生的告警数据格式
+- 特性：支持告警去重和静默机制（20分钟内恢复通知只发送一次）
+
+**接入示例**：
+```yaml
+# Alertmanager 配置示例
+receivers:
+  - name: 'alert-link'
+    webhook_configs:
+      - url: 'http://alert-link-server:8787/for-alertmanager'
+        send_resolved: true
+```
+
+**其他监控系统**：扩展 Receiver 即可支持新的告警源
 
 ### 通知模板
 
