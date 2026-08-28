@@ -1,0 +1,36 @@
+server:
+  port: 8787
+
+spring:
+  application:
+    name: alert-link
+
+alert:
+  rules:
+    # 匹配标签：告警中带有这个标签的会匹配到这个规则
+    - match_tag:
+        channel: "kafka"
+      # 系统标签：匹配后会把这些标签插入到告警中
+      insert_tags:
+        sys_enabled: "true"
+        sys_dd_group: https://oapi.dingtalk.com/robot/send?access_token=xxx
+        sys_env: "production"
+        sys_team: "ops"
+        sys_version: "1.0.0"
+        sys_region: "cn-hangzhou"
+
+    - match_tag:
+        project: "backup"
+      insert_tags:
+        sys_enabled: "false"
+        sys_dd_group: http://localhost:9094/api/v1/alerts
+        sys_env: "staging"
+        sys_team: "backup-ops"
+
+    - match_tag:
+        severity: "critical"
+      insert_tags:
+        sys_enabled: "true"
+        sys_dd_group: http://localhost:9095/api/v1/alerts
+        sys_priority: "high"
+        sys_escalation: "true"
